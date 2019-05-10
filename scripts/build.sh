@@ -4,7 +4,7 @@ set -euxo pipefail
 # Variables to be set:
 # $IMAGE
 function docker_build() {
-	containerID=$(docker create -it -v $(pwd)/.cache:/src/.cache $IMAGE)
+	containerID=$(docker create -e NODE_ENV -e CI -e VSCODE_VERSION -e MAJOR_VERSION -it -v $(pwd)/.cache:/src/.cache $IMAGE)
 	docker start $containerID
 	docker exec $containerID mkdir -p /src
 
@@ -13,7 +13,7 @@ function docker_build() {
 	}
 
 	docker cp ./. $containerID:/src
-	exec "cd /src && yarn"
+	exec "cd /src && yarn --production=false"
 	exec "cd /src && npm rebuild"
 	exec "cd /src && yarn task build:server:binary"
 	exec "cd /src && yarn task package $VERSION"
